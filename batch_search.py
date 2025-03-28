@@ -86,10 +86,28 @@ def save_all_to_json(all_results, filepath):
     
     print(f"所有结果已保存到JSON文件: {filepath}")
 
+def get_browser_type():
+    """获取用户选择的浏览器类型"""
+    print("支持的浏览器类型:")
+    print("1. Chrome")
+    print("2. Firefox (推荐)")
+    print("3. Edge")
+    browser_choice = input("请选择浏览器类型 (默认: Firefox): ")
+    
+    if browser_choice == "1":
+        return BaiduSearcher.BROWSER_CHROME
+    elif browser_choice == "3":
+        return BaiduSearcher.BROWSER_EDGE
+    else:
+        return BaiduSearcher.BROWSER_FIREFOX
+
 def main():
     # 创建保存目录（如果不存在）
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
+    
+    # 获取浏览器类型
+    browser_type = get_browser_type()
     
     # 加载关键词
     keywords = load_keywords(KEYWORDS_FILE)
@@ -104,12 +122,12 @@ def main():
     headless = headless_input.lower() != 'n'
     
     print(f"开始批量搜索 {len(keywords)} 个关键词，每个关键词最多返回 {max_results} 条结果...")
-    print(f"{'使用' if headless else '不使用'}无头模式")
+    print(f"使用 {browser_type} 浏览器，{'使用' if headless else '不使用'}无头模式")
     
     all_results = {}
     
     # 使用with语句自动管理资源
-    with BaiduSearcher(headless=headless) as searcher:
+    with BaiduSearcher(browser_type=browser_type, headless=headless) as searcher:
         for i, keyword in enumerate(keywords, 1):
             print(f"\n[{i}/{len(keywords)}] 正在搜索 '{keyword}'...")
             

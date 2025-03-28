@@ -59,10 +59,28 @@ def save_to_csv(results, keyword, filepath):
     
     print(f"结果已保存到CSV文件: {filepath}")
 
+def get_browser_type():
+    """获取用户选择的浏览器类型"""
+    print("支持的浏览器类型:")
+    print("1. Chrome")
+    print("2. Firefox (推荐)")
+    print("3. Edge")
+    browser_choice = input("请选择浏览器类型 (默认: Firefox): ")
+    
+    if browser_choice == "1":
+        return BaiduSearcher.BROWSER_CHROME
+    elif browser_choice == "3":
+        return BaiduSearcher.BROWSER_EDGE
+    else:
+        return BaiduSearcher.BROWSER_FIREFOX
+
 def main():
     # 创建保存目录（如果不存在）
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
+    
+    # 获取浏览器类型
+    browser_type = get_browser_type()
     
     # 获取用户输入的关键词，如果为空则使用默认值
     keyword = input(f"请输入要搜索的关键词 (默认: {DEFAULT_KEYWORD}): ")
@@ -73,10 +91,15 @@ def main():
     max_results_input = input(f"请输入要返回的最大结果数量 (默认: {DEFAULT_MAX_RESULTS}): ")
     max_results = int(max_results_input) if max_results_input.isdigit() else DEFAULT_MAX_RESULTS
     
-    print(f"正在搜索 '{keyword}'，最多返回 {max_results} 条结果...")
+    # 是否使用无头模式
+    headless_input = input("是否使用无头模式（不显示浏览器窗口）? (y/n, 默认: n): ")
+    headless = headless_input.lower() == 'y'
+    
+    print(f"正在使用 {browser_type} 浏览器搜索 '{keyword}'，最多返回 {max_results} 条结果...")
+    print(f"{'使用' if headless else '不使用'}无头模式")
     
     # 使用with语句自动管理资源
-    with BaiduSearcher(headless=False) as searcher:
+    with BaiduSearcher(browser_type=browser_type, headless=headless) as searcher:
         results = searcher.search(keyword, max_results=max_results)
         
         if not results:
